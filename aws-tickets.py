@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os 
 import logging
 import sys
@@ -53,7 +54,7 @@ def get_aws_events(env, instance_tags):
 
 def print_table(events):
   x = PrettyTable(['Name', 'Instance ID', 'Event_type', 'Start Local', 'End Local'])
-  for k, c in events.items():
+  for k, c in list(events.items()):
     x.add_row([
       c['Name'],
       c['Instance_Id'],
@@ -61,7 +62,7 @@ def print_table(events):
       c['Start'],
       c['End']
       ])
-  print x
+  print(x)
 
 # def post_to_jira(environment, details)
 #   #jira_options={'server': 'http:/jira.clearslideng.com'}
@@ -81,12 +82,12 @@ def print_table(events):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "You forgot some arguments\n"
-        print "Usage: python %s prd instance" % sys.argv[0]
+        print("You forgot some arguments\n")
+        print("Usage: python %s prd instance" % sys.argv[0])
         sys.exit(1)
     else:
       enviroment = sys.argv[1]
       instance_tags = sys.argv[2].split(",")
       event = get_aws_events(enviroment, instance_tags)
-      print event
+      print(event)
       print_table(event)
