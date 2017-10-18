@@ -20,48 +20,61 @@ def utc_to_local(utc_dt):
 
 def get_aws_events(env, instance_tags):
   instance_event_dict = {}
+  region_list = ["us-west-1", "us-west-2", "us-east-1"]
+  session = boto3.Session(profile_name=env)
   for instance_tag in instance_tags:
-    session = boto3.Session(profile_name=env)
-    ec2 = session.client('ec2')
-    instance_name = ec2.describe_instances(
-      Filters=[
-        {
-          'Name' : 'tag-key',
-          'Values' : [
-            'Name']
-        }
-      ],
-      InstanceIds= [instance_tag]
-        )
-    instance_status = ec2.describe_instance_status(
-      InstanceIds= [instance_tag]
-    )
-    for reservation in instance_name['Reservations']:
-      #print "Reservation %s " % reservation
-      for instance in reservation['Instances']:
-        for item in  instance['Tags']:
-          if item['Key'] == 'Name':
-            instance_details = {'Instance_Id': instance['InstanceId'], 'Name': item['Value']}
-            instance_event_dict.update({instance['InstanceId'] : instance_details})
-
-    for item in instance_status['InstanceStatuses']:
-      for event in item['Events']:
-        start_time = utc_to_local(event['NotBefore'])
-        end_time = utc_to_local(event['NotAfter'])
-        instance_event_dict[instance['InstanceId']].update({'Event_type' : event['Code'], 'Start': start_time, 'End': end_time})
+    print(instance_tag)
+    for region in region_list:
+      print(region)
+      ec2 = session.client('ec2', region_name=region)
+      try:  
+        instance_name = ec2.describe_instances(
+          Filters=[
+            {
+              'Name' : 'tag-key',
+              'Values' : [
+                'Name']
+            }
+          ],
+          InstanceIds= [instance_tag]
+            )
+        instance_status = ec2.describe_instance_status(
+          InstanceIds= [instance_tag]
+          )
+        for reservation in instance_name['Reservations']:
+          #print "Reservation %s " % reservation
+          for instance in reservation['Instances']:
+            for item in  instance['Tags']:
+              if item['Key'] == 'Name':
+                instance_details = {'Instance_Id': instance['InstanceId'], 'Name': item['Value']}
+                instance_event_dict.update({instance['InstanceId'] : instance_details})
+        for item in instance_status['InstanceStatuses']:
+          try:          
+            for event in item.get('Events',[]):
+              print(region)
+              start_time = utc_to_local(event['NotBefore'])
+              end_time = utc_to_local(event['NotAfter'])
+              instance_event_dict[instance['InstanceId']].update({'Region' : region, 'Event_type' : event['Code'], 'Start': start_time, 'End': end_time})
+          except:
+            print("no event")
+      except:
+        print("Instnace is not in %s" % region)
 
   return instance_event_dict
 
 def print_table(events):
-  x = PrettyTable(['Name', 'Instance ID', 'Event_type', 'Start Local', 'End Local'])
+  x = PrettyTable(['Name', 'Instance ID', 'Region', 'Event_type', 'Start Local', 'End Local'])
   for k, c in list(events.items()):
-    x.add_row([
-      c['Name'],
-      c['Instance_Id'],
-      c['Event_type'],
-      c['Start'],
-      c['End']
-      ])
+    value = c.get("Region", "empty")
+    if value != "empty":
+      x.add_row([
+        c['Name'],
+        c['Instance_Id'],
+        c['Region'],
+        c['Event_type'],
+        c['Start'],
+        c['End']
+        ])
   print(x)
 
 # def post_to_jira(environment, details)
