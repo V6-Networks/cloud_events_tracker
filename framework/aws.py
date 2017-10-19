@@ -16,7 +16,7 @@ class AWS:
 
         for instance_tag in instance_tags:
             for region in region_list:
-                ec2 = session.client('ec2')
+                ec2 = session.client('ec2', region_name=region)
                 try:
 
                     # Pull instance name
