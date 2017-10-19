@@ -23,9 +23,7 @@ def get_aws_events(env, instance_tags):
   region_list = ["us-west-1", "us-west-2", "us-east-1"]
   session = boto3.Session(profile_name=env)
   for instance_tag in instance_tags:
-    print(instance_tag)
     for region in region_list:
-      print(region)
       ec2 = session.client('ec2', region_name=region)
       try:  
         instance_name = ec2.describe_instances(
@@ -51,14 +49,13 @@ def get_aws_events(env, instance_tags):
         for item in instance_status['InstanceStatuses']:
           try:          
             for event in item.get('Events',[]):
-              print(region)
               start_time = utc_to_local(event['NotBefore'])
               end_time = utc_to_local(event['NotAfter'])
               instance_event_dict[instance['InstanceId']].update({'Region' : region, 'Event_type' : event['Code'], 'Start': start_time, 'End': end_time})
           except:
-            print("no event")
+            continue
       except:
-        print("Instnace is not in %s" % region)
+        continue
 
   return instance_event_dict
 
@@ -102,5 +99,5 @@ if __name__ == '__main__':
       enviroment = sys.argv[1]
       instance_tags = sys.argv[2].split(",")
       event = get_aws_events(enviroment, instance_tags)
-      print(event)
+      #print(event)
       print_table(event)

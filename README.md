@@ -25,21 +25,29 @@ aws_secret_access_key={YOUR_SECRET_ACCESS_KEY}
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
+* Requirements
+  * Python 3
+  * Install pipenv (https://github.com/kennethreitz/pipenv)
 
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
+initialize the development
 
 ```
-until finished
+pipenv shell 
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+Demo
+```
+python aws-tickets.py prd i-4f3b21,i-1d23422b,i-0559d
++--------------------+---------------------+-----------+---------------+---------------------+---------------------+
+|        Name        |     Instance ID     |   Region  |   Event_type  |     Start Local     |      End Local      |
++--------------------+---------------------+-----------+---------------+---------------------+---------------------+
+|        web1-prd         |      i-4f3b21     | us-west-1 | system-reboot | 2017-11-01 04:30:00 | 2017-11-01 08:00:00 |
+| App2-stg |      i-1d23422b     | us-west-2 | system-reboot | 2017-11-06 03:30:00 | 2017-11-06 07:00:00 |
+|     code3-dev     | i-0559d | us-west-2 | system-reboot | 2017-11-06 05:15:00 | 2017-11-06 07:00:00 |
++--------------------+---------------------+-----------+---------------+---------------------+---------------------+
+```
+
+
 
 ## Running the tests
 
@@ -79,7 +87,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Daniel Rahamim** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Daniel Rahamim** - *Initial work* - [Drahamim](https://github.com/drahamim)
 * **Eric Olson** - *Initial work* - [Reservoirdog](https://github.com/reservoirdog)
 
 See also the list of [contributors](https://github.com/V6-Networks/cloud_events_tracker/contributors) who participated in this project.
