@@ -37,7 +37,7 @@ pipenv shell
 
 Demo
 ```
-python aws-tickets.py prd i-4f3b21,i-1d23422b,i-0559d
+python aws-tickets.py -e prd -i i-4f3b21,i-1d23422b,i-0559d
 +------------+-------------+-----------+---------------+---------------------+---------------------+
 |    Name    | Instance ID |   Region  |   Event_type  |     Start Local     |      End Local      |
 +------------+-------------+-----------+---------------+---------------------+---------------------+
