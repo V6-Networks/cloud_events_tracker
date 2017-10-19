@@ -4,6 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+prettytable = "*"
+datetime = "*"
+jira = "*"
+"boto3" = "*"
+pep8 = "*"
 
 [packages]
 
