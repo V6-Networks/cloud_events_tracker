@@ -16,7 +16,6 @@ class AWS:
 
         for instance_tag in instance_tags:
             for region in region_list:
-                print(region)
                 ec2 = session.client('ec2', region_name=region)
                 try:
 
