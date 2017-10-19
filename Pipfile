@@ -8,7 +8,7 @@ prettytable = "*"
 datetime = "*"
 jira = "*"
 "boto3" = "*"
-pep8
+pep8 = "*"
 
 [packages]
 
