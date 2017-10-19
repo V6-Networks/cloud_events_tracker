@@ -1,0 +1,14 @@
+
+dist: trusty
+sudo: false
+
+language: python
+python:
+  - 3.6
+  - nightly
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+script:
+  - pep8 --ignore=E402,E501 .
