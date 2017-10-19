@@ -7,8 +7,8 @@ python:
   - nightly
 
 install:
-  pip install pipenv
-  pipenv install --dev
+  - pip install pipenv
+  - pipenv install --dev
 script:
   - pipenv shell
   - pep8 --ignore=E402,E501
