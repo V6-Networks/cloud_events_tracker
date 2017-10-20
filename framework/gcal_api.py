@@ -111,5 +111,3 @@ class GCalAPI:
                                         sendNotifications=notifications).execute()
 
         print('Event created: {}'.format(event.get('htmlLink')))
-
-
