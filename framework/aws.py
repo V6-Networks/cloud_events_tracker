@@ -51,7 +51,9 @@ class AWS:
                         except ValueError as ve:
                             print('Whoops need to work on this ', ve)
                             continue
-
+                    instance_event_dict[instance['InstanceId']].update(
+                        {'Region': region})
+                
                 except ClientError as ce:
                     print('Whoops need to work on this', ce)
                     continue

@@ -15,11 +15,12 @@ class Utils:
 
     @staticmethod
     def print_table(events):
-        x = PrettyTable(['Name', 'Instance ID', 'Event_type', 'Start Local', 'End Local'])
+        x = PrettyTable(['Name', 'Instance ID','Region', 'Event_type', 'Start Local', 'End Local'])
         for k, c in events.items():
             x.add_row([
                 c['Name'],
                 c['Instance_Id'],
+                c['Region'],
                 c['Event_type'],
                 c['Start'],
                 c['End']
