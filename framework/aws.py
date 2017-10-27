@@ -1,59 +1,123 @@
 import boto3
 from botocore.exceptions import ClientError
-from .utils import Utils
 
 
 class AWS:
-    def __init__(self, env):
+    def __init__(self, service, env=None):
         self.env = env
+        self.service = service
 
-    def get_aws_events(self, instance_tags):
-        instance_event_dict = {}
-        region_list = ['us-west-1', 'us-west-2', 'us-east-1']
+    def __session_client(self, *args):
+        arg = None
+        # Grab argument
+        for a in args:
+            arg = a
 
-        # Build session
-        session = boto3.Session(profile_name=self.env)
+        # Build Session
+        if self.env:
+            session = boto3.client(service_name=self.service,
+                                   region_name=self.env)
+        elif args:
+            session = boto3.client(service_name=self.service,
+                                   region_name=arg)
+        else:
+            session = boto3.client(service_name=self.service)
 
-        for instance_tag in instance_tags:
-            for region in region_list:
-                ec2 = session.client('ec2', region_name=region)
-                try:
+        return session
 
-                    # Pull instance name
-                    instance_name = ec2.describe_instances(
-                        Filters=[
-                            {
-                                'Name': 'tag-key',
-                                'Values': ['Name']
-                            }
-                        ],
-                        InstanceIds=[instance_tag])
+    def __get_paginated_events_arns(self, filters):
 
-                    # Pull instance status
-                    instance_status = ec2.describe_instance_status(
-                        InstanceIds=[instance_tag])
+        arns = []
 
-                    for reservation in instance_name['Reservations']:
-                        # print "Reservation %s " % reservation
-                        for instance in reservation['Instances']:
-                            for item in instance['Tags']:
-                                if item['Key'] == 'Name':
-                                    instance_details = {'Instance_Id': instance['InstanceId'], 'Name': item['Value']}
-                                    instance_event_dict.update({instance['InstanceId']: instance_details})
+        # Build client
+        client = self.__session_client()
 
-                    for item in instance_status['InstanceStatuses']:
-                        try:
-                            for event in item['Events']:
-                                start_time = Utils.utc_to_local(event['NotBefore'])
-                                end_time = Utils.utc_to_local(event['NotAfter'])
-                                instance_event_dict[instance['InstanceId']].update(
-                                    {'Event_type': event['Code'], 'Start': start_time, 'End': end_time})
-                        except ValueError as ve:
-                            print('Whoops need to work on this ', ve)
-                            continue
+        # Build paginator
+        paginator = client.get_paginator('describe_events')
 
-                except ClientError as ce:
-                    print('Whoops need to work on this', ce)
-                    continue
+        # Create paginated results
+        if filters:
+            response = paginator.paginate(filter=filters).build_full_result()
+        else:
+            response = paginator.paginate().build_full_result()
 
-        return instance_event_dict
+        # Get Arns
+        for r in response['events']:
+            arns.append(r)
+
+        # Send it all back
+        return arns
+
+    def _get_paginated_instances(self, instance_id, availability_zone, vpc_id):
+
+        # Build client
+        client = self.__session_client()
+
+        # Build paginator
+        paginator = client.get_paginator('describe_instances')
+
+        for vid in vpc_id:
+            try:
+                # Create paginated results
+                response = paginator.paginate(Filters=[
+                    {
+                        'Name': 'availability-zone',
+                        'Values': [availability_zone]
+                    },
+                    {
+                        'Name': 'tag-key',
+                        'Values': ['Name']
+                    },
+                    {
+                        'Name': 'vpc-id',
+                        'Values': [vid]
+                    }
+                ],
+                    InstanceIds=[instance_id]).build_full_result()
+
+                print(response)
+            except ClientError as ce:
+                print('Woops Error: ', ce)
+
+    def _get_vpc_ids(self, region_name=None):
+
+        vpc_ids = list()
+
+        client = self.__session_client(region_name)
+
+        vpcs = client.describe_vpcs()
+
+        for vpc in vpcs['Vpcs']:
+            vpc_ids.append(vpc['VpcId'])
+
+        return vpc_ids
+
+    def get_aws_event_status(self, filters=None):
+        instance_event_dict = dict()
+
+        # Build the client
+        client = self.__session_client()
+
+        try:
+            # Get all ARNS that can be found
+            event_arn = self.__get_paginated_events_arns(filters)
+
+            for arn in event_arn:
+                response = client.describe_affected_entities(filter={
+                    'eventArns': [arn['arn']]
+                })
+
+                for r in response['entities']:
+                    instance_event_dict.update({r['entityValue']: {'Instance_Id': r['entityValue'],
+                                                                   'Region': arn['region'],
+                                                                   'Event_type': arn['eventTypeCode'],
+                                                                   'Service': arn['service'],
+                                                                   'Start': arn['startTime'],
+                                                                   'End': arn['endTime']}})
+
+            return instance_event_dict
+
+        except ClientError as ce:
+            print(ce)
+
+
