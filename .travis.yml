@@ -11,4 +11,3 @@ install:
   - pipenv install --dev
 script:
   - pep8 --ignore=E402,E501 .
-  
