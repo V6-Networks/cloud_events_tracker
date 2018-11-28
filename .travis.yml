@@ -10,4 +10,4 @@ install:
   - pip install pipenv
   - pipenv install --dev
 script:
-  - pep8 --ignore=E402,E501 .
+  - pep8 --ignore=E402,E501
