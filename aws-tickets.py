@@ -27,4 +27,3 @@ if __name__ == '__main__':
     # Print what we find
     print(event)
     Utils.print_table(event)
-
